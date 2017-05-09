@@ -1,0 +1,5 @@
+*.pyc
+SVC2004/
+log/
+model/
+.idea
