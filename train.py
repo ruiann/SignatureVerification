@@ -12,6 +12,7 @@ loop = 2000 * 50
 batch_size = 64
 channel = 3
 scale = 100
+sequence_limit = 500
 
 log_dir = './log'
 model_dir = './model'
@@ -27,6 +28,8 @@ fake_range = fake_data_range()
 
 def normalize(sample):
     sample = np.array(sample, dtype=np.float32)
+    if len(sample) > sequence_limit:
+        sample = sample[0: sequence_limit]
     max_x = max(np.fabs(sample[:, 0]))
     max_y = max(np.fabs(sample[:, 1]))
     for line in sample:
@@ -42,7 +45,9 @@ def get_pair():
     target_index = random.sample(genuine_range, 1)[0] - 1
     reference = genuine_data[writer][reference_index]
     target = genuine_data[writer][target_index] if label == 1 else fake_data[writer][target_index]
-    return normalize(reference), len(reference), normalize(target), len(target), [label]
+    reference = normalize(reference)
+    target = normalize(target)
+    return reference, len(reference), target, len(target), [label]
 
 
 def get_feed():
@@ -61,8 +66,7 @@ def get_feed():
     for i in range(batch_size):
         reference[i] = np.pad(reference[i], ((0, max_reference - len(reference[i])), (0, 0)), 'constant', constant_values=0)
         target[i] = np.pad(target[i], ((0, max_target - len(target[i])), (0, 0)), 'constant', constant_values=0)
-        # reference[i] = np.concatenate(reference[i], [[0, 0, 0] for j in range(max_reference - len(reference[i]))])
-        # target[i] = np.concatenate(target[i], [[0, 0, 0] for j in range(max_target - len(target[i]))])
+
     return reference, target, labels
 
 def train():
