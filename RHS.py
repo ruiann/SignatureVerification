@@ -31,5 +31,5 @@ class RHS:
     def train(self, rate, reference, target, labels):
         logits = self.run(reference, target)
         loss = self.loss(logits, labels)
-        tf.summary.scalar('classifier loss', loss)
+        tf.summary.scalar('sigmoid loss', loss)
         return tf.train.AdamOptimizer(learning_rate=rate).minimize(loss)
