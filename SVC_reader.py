@@ -21,26 +21,34 @@ def read_file(path):
         lines = file.readlines()
         for line_index in useless_line:
             del lines[line_index]
-        s = []
+
         base_x = None
         base_y = None
-        base_p = None
+        base_s = 0
+        front_p = 0
+
+        sample = []
         for line in lines:
             line = line.replace('\r', '')
             line = line.replace('\n', '')
             data = line.split()
-            if base_x:
-                s.append([int(data[0]) - base_x, int(data[1]) - base_y, 1 if int(data[3]) * base_p > 0 else 0])
 
-            base_x = int(data[0])
-            base_y = int(data[1])
-            base_p = int(data[3])
+            if int(data[3]) != 0:
+                if base_x:
+                    sample.append([int(data[0]) - base_x, int(data[1]) - base_y, base_s])
+                base_x = int(data[0])
+                base_y = int(data[1])
+                front_p = 1
+            else:
+                if front_p == 1:
+                    base_s = base_s + 1
+                front_p = 0
 
     except Exception, e:
         print repr(e)
         return None
 
-    return s
+    return sample
 
 
 def get_genuine_data():
@@ -69,3 +77,4 @@ if __name__ == '__main__':
     print(len(data))
     print(len(data[0]))
     print(len(data[0][0]))
+    print(data[0][0])
