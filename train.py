@@ -7,7 +7,7 @@ from SVC_reader import *
 import random
 import numpy as np
 
-rate = 0.0001
+rate = 0.001
 loop = 2000 * 50
 batch_size = 64
 channel = 3
@@ -16,8 +16,6 @@ sequence_limit = 500
 
 log_dir = './log'
 model_dir = './model'
-
-rhs = RHS(lstm_size=800)
 
 genuine_data = get_genuine_data()
 fake_data = get_fake_data()
@@ -69,8 +67,9 @@ def get_feed():
 
     return reference, target, labels
 
-def train():
 
+def train():
+    rhs = RHS(lstm_size=800)
     reference_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
     target_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
     label_x = tf.placeholder(tf.float32, shape=(batch_size, 1))
@@ -79,15 +78,15 @@ def train():
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
     # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     sess = tf.Session()
-    saver = tf.train.Saver()
-    checkpoint = tf.train.get_checkpoint_state(model_dir)
-    summary = tf.summary.merge_all()
-    run_metadata = tf.RunMetadata()
 
     with sess.as_default():
+        saver = tf.train.Saver()
+        checkpoint = tf.train.get_checkpoint_state(model_dir)
         if checkpoint:
             saver.restore(sess, checkpoint.model_checkpoint_path)
         summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
+        summary = tf.summary.merge_all()
+        run_metadata = tf.RunMetadata()
         sess.run(tf.global_variables_initializer())
 
         print('Memory usage: {0}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
