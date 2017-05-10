@@ -1,23 +1,16 @@
-import os
 import tensorflow as tf
-import time
-import resource
 from RHS import RHS
 from SVC_reader import *
 import numpy as np
 
-rate = 0.001
-loop = 2000 * 50
-batch_size = 64
+test_loop = 50
+batch_size = 1
 channel = 3
-scale = 100
-sequence_limit = 500
 
-log_dir = './log'
+test_path = './SVC2004/Task2'
 model_dir = './model'
-train_path = './SVC2004/Task1'
 
-data = Data(train_path)
+data = Data(test_path)
 
 
 def get_feed():
@@ -40,12 +33,11 @@ def get_feed():
     return reference, target, labels
 
 
-def train():
+def test():
     rhs = RHS(lstm_size=800)
     reference_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
     target_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
-    label_x = tf.placeholder(tf.float32, shape=(batch_size, 1))
-    train_op = rhs.train(rate, reference_x, target_x, label_x)
+    train_op = rhs.run(reference_x, target_x)
 
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
     # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
@@ -56,30 +48,16 @@ def train():
         checkpoint = tf.train.get_checkpoint_state(model_dir)
         if checkpoint:
             saver.restore(sess, checkpoint.model_checkpoint_path)
-        summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
-        summary = tf.summary.merge_all()
-        run_metadata = tf.RunMetadata()
         sess.run(tf.global_variables_initializer())
 
-        print('Memory usage: {0}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
-
-        for step in range(loop):
-            start_time = time.time()
+        for step in range(test_loop):
             print('step: {}'.format(step))
             reference_feed, target_feed, label_feed = get_feed()
-            _, summary_str = sess.run([train_op, summary], feed_dict={reference_x: reference_feed, target_x: target_feed, label_x: label_feed})
-            summary_writer.add_summary(summary_str, step)
+            prob = sess.run(train_op, feed_dict={reference_x: reference_feed, target_x: target_feed})
 
-            if step % 100 == 0 and step != 0:
-                checkpoint_file = os.path.join(model_dir, 'model.latest')
-                saver.save(sess, checkpoint_file)
-                summary_writer.add_run_metadata(run_metadata, 'step%03d' % step)
-
-            print("step cost: {0}".format(time.time() - start_time))
-            print('Memory usage: {0}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
-
-        summary_writer.close()
+            print(prob)
+            print(label_feed)
 
 
 if __name__ == '__main__':
-    train()
+    test()

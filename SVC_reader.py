@@ -1,3 +1,6 @@
+import random
+import numpy as np
+
 base_path = './SVC2004/Task1'
 useless_line = [0]
 
@@ -51,24 +54,57 @@ def read_file(path):
     return sample
 
 
-def get_genuine_data():
+def get_genuine_data(dir_path=base_path):
     data = []
     for writer in get_writer_list():
         writer_sample = []
         for index in genuine_data_range():
-            writer_sample.append(read_file('{}/U{}S{}.TXT'.format(base_path, writer, index)))
+            writer_sample.append(read_file('{}/U{}S{}.TXT'.format(dir_path, writer, index)))
         data.append(writer_sample)
     return data
 
 
-def get_fake_data():
+def get_fake_data(dir_path=base_path):
     data = []
     for writer in get_writer_list():
         writer_sample = []
         for index in fake_data_range():
-            writer_sample.append(read_file('{}/U{}S{}.TXT'.format(base_path, writer, index)))
+            writer_sample.append(read_file('{}/U{}S{}.TXT'.format(dir_path, writer, index)))
         data.append(writer_sample)
     return data
+
+
+class Data:
+    def __init__(self, dir_path=base_path, sequence_limit=500, scale=100):
+        self.genuine_data = get_genuine_data(dir_path)
+        self.fake_data = get_fake_data(dir_path)
+        self.writer_list = get_writer_list()
+        self.genuine_range = genuine_data_range()
+        self.fake_range = fake_data_range()
+        self.sequence_limit = sequence_limit
+        self.scale = 100
+
+    def normalize(self, sample):
+        sample = np.array(sample, dtype=np.float32)
+        if len(sample) > self.sequence_limit:
+            sample = sample[0: self.sequence_limit]
+        max_x = max(np.fabs(sample[:, 0]))
+        max_y = max(np.fabs(sample[:, 1]))
+        for line in sample:
+            line[0] = self.scale * line[0] / max_x
+            line[1] = self.scale * line[1] / max_y
+        return sample
+
+    def get_pair(self):
+        writer = random.sample(self.writer_list, 1)[0] - 1
+        reference_index = random.sample(self.genuine_range, 1)[0] - 1
+        label = random.randint(0, 1)
+        target_index = random.sample(self.genuine_range, 1)[0] - 1
+        reference = self.genuine_data[writer][reference_index]
+        target = self.genuine_data[writer][target_index] if label == 1 else self.fake_data[writer][target_index]
+        reference = self.normalize(reference)
+        target = self.normalize(target)
+        return reference, len(reference), target, len(target), [label]
 
 
 if __name__ == '__main__':
