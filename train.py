@@ -2,7 +2,7 @@ import os
 import tensorflow as tf
 import time
 import resource
-from RHS import RHS
+from GAN import GAN
 from SVC_reader import *
 import numpy as np
 
@@ -14,7 +14,7 @@ scale = 100
 sequence_limit = 500
 
 log_dir = './log'
-model_dir = './model'
+model_dir = './gan_model'
 train_path = './SVC2004/Task1'
 
 data = Data(train_path)
@@ -41,11 +41,10 @@ def get_feed():
 
 
 def train():
-    rhs = RHS(lstm_size=800)
+    gan = GAN(batch_size)
     reference_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
     target_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
-    label_x = tf.placeholder(tf.float32, shape=(batch_size, 1))
-    train_op = rhs.train(rate, reference_x, target_x, label_x)
+    d_train_op, g_train_op = gan.train(rate, reference_x, target_x)
 
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
     # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
@@ -67,10 +66,10 @@ def train():
             start_time = time.time()
             print('step: {}'.format(step))
             reference_feed, target_feed, label_feed = get_feed()
-            _, summary_str = sess.run([train_op, summary], feed_dict={reference_x: reference_feed, target_x: target_feed, label_x: label_feed})
+            _, _, summary_str = sess.run([d_train_op, g_train_op, summary], feed_dict={reference_x: reference_feed, target_x: target_feed})
             summary_writer.add_summary(summary_str, step)
 
-            if step % 100 == 0 and step != 0:
+            if step % 1000 == 999:
                 checkpoint_file = os.path.join(model_dir, 'model.latest')
                 saver.save(sess, checkpoint_file)
                 summary_writer.add_run_metadata(run_metadata, 'step%03d' % step)
