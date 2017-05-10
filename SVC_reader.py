@@ -106,6 +106,20 @@ class Data:
         target = self.normalize(target)
         return reference, len(reference), target, len(target), [label]
 
+    def get_multi_reference_pair(self, multi=3):
+        writer = random.sample(self.writer_list, 1)[0] - 1
+        label = random.randint(0, 1)
+        target_index = random.sample(self.genuine_range, 1)[0] - 1
+        target_sample = self.genuine_data[writer][target_index] if label == 1 else self.fake_data[writer][target_index]
+        target_sample = self.normalize(target_sample)
+        reference = []
+        target = []
+        for i in range(multi):
+            reference_index = random.sample(self.genuine_range, 1)[0] - 1
+            reference.append(self.normalize(self.genuine_data[writer][reference_index]))
+            target.append(target_sample)
+        return reference, target, label
+
 
 if __name__ == '__main__':
     # data = read_file('{}/U{}S{}.TXT'.format(base_path, 1, 1))

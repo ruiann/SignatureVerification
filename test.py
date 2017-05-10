@@ -3,34 +3,30 @@ from RHS import RHS
 from SVC_reader import *
 import numpy as np
 
-test_loop = 50
-batch_size = 1
+test_loop = 10
+batch_size = 3
 channel = 3
 
-test_path = './SVC2004/Task2'
+test_path = './SVC2004/Task1'
 model_dir = './model'
 
 data = Data(test_path)
 
 
+# get 1 target and multi reference to judge
 def get_feed():
-    reference = []
-    target = []
-    labels = []
     max_reference = 0
     max_target = 0
-    for i in range(batch_size):
-        reference_data, reference_length, target_data, target_length, label_data = data.get_pair()
-        reference.append(reference_data)
-        target.append(target_data)
-        labels.append(label_data)
-        max_reference = max_reference if max_reference >= reference_length else reference_length
-        max_target = max_target if max_target >= target_length else target_length
-    for i in range(batch_size):
-        reference[i] = np.pad(reference[i], ((0, max_reference - len(reference[i])), (0, 0)), 'constant', constant_values=0)
-        target[i] = np.pad(target[i], ((0, max_target - len(target[i])), (0, 0)), 'constant', constant_values=0)
+    reference_data, target_data, label = data.get_multi_reference_pair(batch_size)
 
-    return reference, target, labels
+    for i in range(batch_size):
+        max_reference = max(max_reference, len(reference_data[i]))
+        max_target = max(max_target, len(target_data[i]))
+    for i in range(batch_size):
+        reference_data[i] = np.pad(reference_data[i], ((0, max_reference - len(reference_data[i])), (0, 0)), 'constant', constant_values=0)
+        target_data[i] = np.pad(target_data[i], ((0, max_target - len(target_data[i])), (0, 0)), 'constant', constant_values=0)
+
+    return reference_data, target_data, label
 
 
 def test():
