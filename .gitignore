@@ -3,3 +3,5 @@ SVC2004/
 log/
 model/
 .idea
+model_genuine/
+model_forgery/

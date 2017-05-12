@@ -107,13 +107,38 @@ class Data:
         target = self.normalize(self.genuine_data[writer][target_index])
         return reference, target
 
+    def get_all_genuine_pair(self):
+        pair = []
+        for writer in self.writer_list:
+            writer = writer - 1
+            for reference_index in self.genuine_range:
+                for target_index in self.genuine_range:
+                    if target_index != reference_index:
+                        reference = self.normalize(self.genuine_data[writer][reference_index - 1])
+                        target = self.normalize(self.genuine_data[writer][target_index - 1])
+                        pair.append((reference, target))
+
+        return pair
+
     def get_fake_pair(self):
         writer = random.sample(self.writer_list, 1)[0] - 1
         reference_index = random.sample(self.genuine_range, 1)[0] - 1
         target_index = random.sample(self.genuine_range, 1)[0] - 1
-        reference = self.normalize(self.genuine_data[writer][reference_index])
-        target = self.normalize(self.fake_data[writer][target_index])
+        reference = self.normalize(self.genuine_data[writer][reference_index - 1])
+        target = self.normalize(self.fake_data[writer][target_index - 1])
         return reference, target
+
+    def get_all_fake_pair(self):
+        pair = []
+        for writer in self.writer_list:
+            writer = writer - 1
+            for reference_index in self.genuine_range:
+                for target_index in self.genuine_range:
+                    reference = self.normalize(self.genuine_data[writer][reference_index - 1])
+                    target = self.normalize(self.fake_data[writer][target_index - 1])
+                    pair.append((reference, target))
+
+        return pair
 
 
 if __name__ == '__main__':

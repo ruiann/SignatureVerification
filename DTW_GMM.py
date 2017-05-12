@@ -6,17 +6,19 @@ from dtw import dtw
 from tensorflow.contrib.factorization.python.ops import gmm
 import tensorflow as tf
 from reader_for_dtw_gmm import Data
-import pdb
 
 
 def my_custom_norm(x, y):
     return (x * x) + (y * y)
 
+genuine_model_dir = './model_genuine'
+forgery_model_dir = './model_forgery'
+
 
 class DTW_GMM:
     def __init__(self, cluster_num=3):
-        self.genuine_gmm = gmm.GMM(cluster_num, random_seed=0)
-        self.forgery_gmm = gmm.GMM(cluster_num)
+        self.genuine_gmm = gmm.GMM(cluster_num, model_dir=genuine_model_dir)
+        self.forgery_gmm = gmm.GMM(cluster_num, model_dir=forgery_model_dir)
 
     def compare(self, reference, target):
         channel_dtw = []
@@ -27,13 +29,15 @@ class DTW_GMM:
 
     def input_fn(self, data):
         def fn():
-            return tf.constant(data, dtype=tf.float32), None
+            return tf.constant(data), None
         return fn
 
-    def train_genuine(self, data, steps=10):
+    def train_genuine(self, data, steps=100):
+        print(data)
         self.genuine_gmm.fit(input_fn=self.input_fn(data), steps=steps)
 
-    def train_forgery(self, data, steps=10):
+    def train_forgery(self, data, steps=100):
+        print(data)
         self.forgery_gmm.fit(input_fn=self.input_fn(data), steps=steps)
 
     def infer(self, data):
@@ -41,24 +45,30 @@ class DTW_GMM:
         forgery_score = self.forgery_gmm.score(input_fn=self.input_fn(data), steps=1)
         return genuine_score - forgery_score
 
-batch_size = 64
-loop = 100
 model = DTW_GMM()
 data = Data()
 
 
 def train():
-    for step in range(loop):
-        print('step: {}'.format(step))
-        genuine_data = []
-        forgery_data = []
-        for i in range(batch_size):
-            reference, target = data.get_genuine_pair()
-            genuine_data.append(model.compare(reference, target))
-            reference, target = data.get_fake_pair()
-            forgery_data.append(model.compare(reference, target))
+    genuine_pair = data.get_all_genuine_pair()
+    forgery_pair = data.get_all_fake_pair()
 
-        model.train_genuine(genuine_data)
+    genuine_data = []
+    forgery_data = []
+
+    for pair in genuine_pair:
+        (reference, target) = pair
+        genuine_data.append(model.compare(reference, target))
+
+    print('train genuine gmm')
+    model.train_genuine(genuine_data)
+
+    for pair in forgery_pair:
+        (reference, target) = pair
+        forgery_data.append(model.compare(reference, target))
+
+    print('train forgery gmm')
+    model.train_forgery(forgery_data)
 
 
 if __name__ == '__main__':
