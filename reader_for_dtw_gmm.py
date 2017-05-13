@@ -26,10 +26,13 @@ def read_file(path):
             del lines[line_index]
 
         front_p = 0
+        before_front_p = 0
         sample_x = []
         sample_y = []
         velocity_x = []
         velocity_y = []
+        acceleration_x = []
+        acceleration_y = []
         for line in lines:
             line = line.replace('\r', '')
             line = line.replace('\n', '')
@@ -38,24 +41,28 @@ def read_file(path):
             if int(data[3]) != 0:
                 x = int(data[0])
                 y = int(data[1])
+                sample_x.append(x)
+                sample_y.append(y)
                 if front_p == 1:
-                    sample_x.append(x)
-                    sample_y.append(y)
                     velocity_x.append(x - front_x)
                     velocity_y.append(y - front_y)
-
+                    if before_front_p == 1:
+                        acceleration_x.append(velocity_x[-1] - velocity_x[-2])
+                        acceleration_y.append(velocity_y[-1] - velocity_y[-2])
                 front_x = x
                 front_y = y
+                before_front_p = front_p
                 front_p = 1
 
             else:
+                before_front_p = front_p
                 front_p = 0
 
-    except Exception as e:
-        print(repr(e))
+    except:
+        print(path)
         return None
 
-    return [sample_x, sample_y, velocity_x, velocity_y]
+    return [sample_x, sample_y, velocity_x, velocity_y, acceleration_x, acceleration_y]
 
 
 def get_genuine_data(dir_path=base_path):
@@ -79,25 +86,24 @@ def get_fake_data(dir_path=base_path):
 
 
 class Data:
-    def __init__(self, dir_path=base_path, scale=100):
+    def __init__(self, dir_path=base_path):
         self.genuine_data = get_genuine_data(dir_path)
         self.fake_data = get_fake_data(dir_path)
         self.writer_list = get_writer_list()
         self.genuine_range = genuine_data_range()
         self.fake_range = fake_data_range()
-        self.scale = scale
 
     def norm(self, sequence):
         sequence = np.array(sequence, dtype=np.float32)
-        max = sequence.max()
-        min = sequence.min()
-        sequence = self.scale * (sequence - min) / (max - min)
+        mean = sequence.mean()
+        std = sequence.std()
+        sequence = (sequence - mean) / std
         return sequence
 
     def normalize(self, sample):
         for i in range(len(sample)):
             sample[i] = self.norm(sample[i])
-        return np.array(sample, dtype=np.float32)
+        return sample
 
     def get_genuine_pair(self):
         writer = random.sample(self.writer_list, 1)[0] - 1
