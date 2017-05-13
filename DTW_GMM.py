@@ -7,7 +7,9 @@ from tensorflow.contrib.factorization.python.ops import gmm
 import tensorflow as tf
 import numpy as np
 from reader_for_dtw_gmm import Data
-import pdb
+
+train_dir = './SVC2004/Task1'
+test_dir = './SVC2004/Task2'
 
 
 def my_custom_norm(x, y):
@@ -105,7 +107,9 @@ def test():
 
 
 if __name__ == '__main__':
-    # build_data('genuine_dtw.txt', 'forgery_dtw.txt')
-    # build_data('test_genuine_dtw.txt', 'test_forgery_dtw.txt', './SVC2004/Task1')
-    train()
-    test()
+    # build train data
+    build_data('genuine_dtw.txt', 'forgery_dtw.txt', train_dir)
+    # build test data
+    build_data('test_genuine_dtw.txt', 'test_forgery_dtw.txt', test_dir)
+    # train()
+    # test()
