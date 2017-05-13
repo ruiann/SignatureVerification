@@ -96,13 +96,16 @@ def train():
 
 def test():
     genuine_data = np.loadtxt('test_genuine_dtw.txt', dtype=np.float32)
-    genuine_sample = genuine_data[0: 10000]
-    result = model.infer(genuine_sample)
+    result = model.infer(genuine_data)
+    print(np.sum(result > 0))
+
+    forgery_data = np.loadtxt('test_forgery_dtw.txt', dtype=np.float32)
+    result = model.infer(forgery_data)
     print(np.sum(result > 0))
 
 
 if __name__ == '__main__':
     # build_data('genuine_dtw.txt', 'forgery_dtw.txt')
     # build_data('test_genuine_dtw.txt', 'test_forgery_dtw.txt', './SVC2004/Task1')
-    # train()
+    train()
     test()
