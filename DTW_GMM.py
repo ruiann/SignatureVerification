@@ -5,6 +5,7 @@ from __future__ import print_function
 from dtw import dtw
 from tensorflow.contrib.factorization.python.ops import gmm
 import tensorflow as tf
+import numpy as np
 from reader_for_dtw_gmm import Data
 
 
@@ -32,11 +33,11 @@ class DTW_GMM:
             return tf.constant(data), None
         return fn
 
-    def train_genuine(self, data, steps=100):
+    def train_genuine(self, data, steps=1000):
         print(data)
         self.genuine_gmm.fit(input_fn=self.input_fn(data), steps=steps)
 
-    def train_forgery(self, data, steps=100):
+    def train_forgery(self, data, steps=1000):
         print(data)
         self.forgery_gmm.fit(input_fn=self.input_fn(data), steps=steps)
 
@@ -49,24 +50,39 @@ model = DTW_GMM()
 data = Data()
 
 
-def train():
+def build_data():
     genuine_pair = data.get_all_genuine_pair()
     forgery_pair = data.get_all_fake_pair()
 
     genuine_data = []
     forgery_data = []
 
+    index = 0
     for pair in genuine_pair:
+        print(index)
+        index = index + 1
         (reference, target) = pair
         genuine_data.append(model.compare(reference, target))
 
-    print('train genuine gmm')
-    model.train_genuine(genuine_data)
+    genuine_data = np.array(genuine_data, np.float32)
+    np.savetxt("genuine_dtw.txt", genuine_data)
 
+    index = 0
     for pair in forgery_pair:
+        print(index)
+        index = index + 1
         (reference, target) = pair
         forgery_data.append(model.compare(reference, target))
 
+    forgery_data = np.array(forgery_data, np.float32)
+    np.savetxt("forgery_dtw.txt", forgery_data)
+
+
+def train():
+    genuine_data = np.loadtxt("genuine_dtw.txt", dtype=np.float32)
+    forgery_data = np.loadtxt("forgery_dtw.txt", dtype=np.float32)
+    print('train genuine gmm')
+    model.train_genuine(genuine_data)
     print('train forgery gmm')
     model.train_forgery(forgery_data)
 

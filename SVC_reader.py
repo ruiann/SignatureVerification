@@ -47,8 +47,8 @@ def read_file(path):
                     base_s = base_s + 1
                 front_p = 0
 
-    except Exception, e:
-        print repr(e)
+    except Exception as e:
+        print(repr(e))
         return None
 
     return sample

@@ -5,3 +5,5 @@ model/
 .idea
 model_genuine/
 model_forgery/
+forgery_dtw.txt
+genuine_dtw.txt
