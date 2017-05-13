@@ -51,8 +51,8 @@ def read_file(path):
             else:
                 front_p = 0
 
-    except Exception, e:
-        print repr(e)
+    except Exception as e:
+        print(repr(e))
         return None
 
     return [sample_x, sample_y, velocity_x, velocity_y]

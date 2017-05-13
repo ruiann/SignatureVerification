@@ -7,6 +7,7 @@ from tensorflow.contrib.factorization.python.ops import gmm
 import tensorflow as tf
 import numpy as np
 from reader_for_dtw_gmm import Data
+import pdb
 
 
 def my_custom_norm(x, y):
@@ -42,15 +43,21 @@ class DTW_GMM:
         self.forgery_gmm.fit(input_fn=self.input_fn(data), steps=steps)
 
     def infer(self, data):
-        genuine_score = self.genuine_gmm.score(input_fn=self.input_fn(data), steps=1)
-        forgery_score = self.forgery_gmm.score(input_fn=self.input_fn(data), steps=1)
-        return genuine_score - forgery_score
+        genuine_result = self.genuine_gmm.predict(input_fn=self.input_fn(data))
+        forgery_result = self.forgery_gmm.predict(input_fn=self.input_fn(data))
+        genuine_score = []
+        forgery_score = []
+        for result in genuine_result:
+            genuine_score.append(result['all_scores'][result['assignments']])
+        for result in forgery_result:
+            forgery_score.append(result['all_scores'][result['assignments']])
+        return np.array(forgery_score) - np.array(genuine_score)
 
 model = DTW_GMM()
-data = Data()
 
 
-def build_data():
+def build_data(genuine_path, forgery_path, dir=None):
+    data = Data(dir)
     genuine_pair = data.get_all_genuine_pair()
     forgery_pair = data.get_all_fake_pair()
 
@@ -65,7 +72,7 @@ def build_data():
         genuine_data.append(model.compare(reference, target))
 
     genuine_data = np.array(genuine_data, np.float32)
-    np.savetxt("genuine_dtw.txt", genuine_data)
+    np.savetxt(genuine_path, genuine_data)
 
     index = 0
     for pair in forgery_pair:
@@ -75,17 +82,27 @@ def build_data():
         forgery_data.append(model.compare(reference, target))
 
     forgery_data = np.array(forgery_data, np.float32)
-    np.savetxt("forgery_dtw.txt", forgery_data)
+    np.savetxt(forgery_path, forgery_data)
 
 
 def train():
-    genuine_data = np.loadtxt("genuine_dtw.txt", dtype=np.float32)
-    forgery_data = np.loadtxt("forgery_dtw.txt", dtype=np.float32)
+    genuine_data = np.loadtxt('genuine_dtw.txt', dtype=np.float32)
+    forgery_data = np.loadtxt('forgery_dtw.txt', dtype=np.float32)
     print('train genuine gmm')
-    model.train_genuine(genuine_data)
+    model.train_genuine(genuine_data, steps=1000)
     print('train forgery gmm')
-    model.train_forgery(forgery_data)
+    model.train_forgery(forgery_data, steps=1000)
+
+
+def test():
+    genuine_data = np.loadtxt('test_genuine_dtw.txt', dtype=np.float32)
+    genuine_sample = genuine_data[0: 10000]
+    result = model.infer(genuine_sample)
+    print(np.sum(result > 0))
 
 
 if __name__ == '__main__':
-    train()
+    # build_data('genuine_dtw.txt', 'forgery_dtw.txt')
+    # build_data('test_genuine_dtw.txt', 'test_forgery_dtw.txt', './SVC2004/Task1')
+    # train()
+    test()

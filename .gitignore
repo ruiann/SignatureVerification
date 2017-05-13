@@ -7,3 +7,4 @@ model_genuine/
 model_forgery/
 forgery_dtw.txt
 genuine_dtw.txt
+test_genuine_dtw.txt
