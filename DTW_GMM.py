@@ -89,9 +89,9 @@ def train():
     genuine_data = np.loadtxt('genuine_dtw.txt', dtype=np.float32)
     forgery_data = np.loadtxt('forgery_dtw.txt', dtype=np.float32)
     print('train genuine gmm')
-    model.train_genuine(genuine_data, steps=1000)
+    model.train_genuine(genuine_data, steps=10000)
     print('train forgery gmm')
-    model.train_forgery(forgery_data, steps=1000)
+    model.train_forgery(forgery_data, steps=10000)
 
 
 def test():
@@ -101,7 +101,7 @@ def test():
 
     forgery_data = np.loadtxt('test_forgery_dtw.txt', dtype=np.float32)
     result = model.infer(forgery_data)
-    print(np.sum(result > 0))
+    print(np.sum(result < 0))
 
 
 if __name__ == '__main__':
