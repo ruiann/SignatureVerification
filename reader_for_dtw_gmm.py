@@ -1,5 +1,6 @@
 import random
 import numpy as np
+from scipy.fftpack import dct
 
 base_path = './SVC2004/Task1'
 useless_line = [0]
@@ -62,7 +63,8 @@ def read_file(path):
         print(path)
         return None
 
-    return [sample_x, sample_y, velocity_x, velocity_y, acceleration_x, acceleration_y]
+    # for dct, use velocity & acceleration only
+    return [velocity_x, velocity_y, acceleration_x, acceleration_y]
 
 
 def get_genuine_data(dir_path=base_path):
@@ -98,7 +100,7 @@ class Data:
         mean = sequence.mean()
         std = sequence.std()
         sequence = (sequence - mean) / std
-        return sequence
+        return dct(sequence)[0:20]
 
     def normalize(self, sample):
         for i in range(len(sample)):

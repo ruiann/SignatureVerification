@@ -2,21 +2,27 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from dtw import dtw
 from tensorflow.contrib.factorization.python.ops import gmm
 import tensorflow as tf
 import numpy as np
 from reader_for_dtw_gmm import Data
+from mlpy import dtw
 
 train_dir = './SVC2004/Task1'
 test_dir = './SVC2004/Task2'
-
-
-def my_custom_norm(x, y):
-    return (x * x) + (y * y)
-
 genuine_model_dir = './model_genuine'
 forgery_model_dir = './model_forgery'
+train_genuine_dtw_path = 'genuine_dtw.txt'
+train_forgery_dtw_path = 'forgery_dtw.txt'
+test_genuine_dtw_path = 'test_genuine_dtw.txt'
+test_forgery_dtw_path = 'test_forgery_dtw.txt'
+
+
+def input_fn(data):
+    def fn():
+        return tf.constant(data), None
+
+    return fn
 
 
 class DTW_GMM:
@@ -27,26 +33,20 @@ class DTW_GMM:
     def compare(self, reference, target):
         channel_dtw = []
         for channel_index in range(len(reference)):
-            dis, _, _, _ = dtw(reference[channel_index], target[channel_index], dist=my_custom_norm)
-            channel_dtw.append(dis)
+            dist = dtw.dtw_std(reference[channel_index], target[channel_index], dist_only=True)
+            channel_dtw.append(dist)
+        print(channel_dtw)
         return channel_dtw
 
-    def input_fn(self, data):
-        def fn():
-            return tf.constant(data), None
-        return fn
-
     def train_genuine(self, data, steps=1000):
-        print(data)
-        self.genuine_gmm.fit(input_fn=self.input_fn(data), steps=steps)
+        self.genuine_gmm.fit(input_fn=input_fn(data), steps=steps)
 
     def train_forgery(self, data, steps=1000):
-        print(data)
-        self.forgery_gmm.fit(input_fn=self.input_fn(data), steps=steps)
+        self.forgery_gmm.fit(input_fn=input_fn(data), steps=steps)
 
     def infer(self, data):
-        genuine_result = self.genuine_gmm.predict(input_fn=self.input_fn(data))
-        forgery_result = self.forgery_gmm.predict(input_fn=self.input_fn(data))
+        genuine_result = self.genuine_gmm.predict(input_fn=input_fn(data))
+        forgery_result = self.forgery_gmm.predict(input_fn=input_fn(data))
         genuine_score = []
         forgery_score = []
         for result in genuine_result:
@@ -58,7 +58,7 @@ class DTW_GMM:
 model = DTW_GMM()
 
 
-def build_data(genuine_path, forgery_path, dir=None):
+def build_data(genuine_path, forgery_path, dir):
     data = Data(dir)
     genuine_pair = data.get_all_genuine_pair()
     forgery_pair = data.get_all_fake_pair()
@@ -88,8 +88,8 @@ def build_data(genuine_path, forgery_path, dir=None):
 
 
 def train():
-    genuine_data = np.loadtxt('genuine_dtw.txt', dtype=np.float32)
-    forgery_data = np.loadtxt('forgery_dtw.txt', dtype=np.float32)
+    genuine_data = np.loadtxt(train_genuine_dtw_path, dtype=np.float32)
+    forgery_data = np.loadtxt(train_forgery_dtw_path, dtype=np.float32)
     print('train genuine gmm')
     model.train_genuine(genuine_data, steps=10000)
     print('train forgery gmm')
@@ -97,19 +97,19 @@ def train():
 
 
 def test():
-    genuine_data = np.loadtxt('test_genuine_dtw.txt', dtype=np.float32)
+    genuine_data = np.loadtxt(test_genuine_dtw_path, dtype=np.float32)
     result = model.infer(genuine_data)
-    print(np.sum(result > 0))
+    print(np.sum(result > 0) / len(genuine_data))
 
-    forgery_data = np.loadtxt('test_forgery_dtw.txt', dtype=np.float32)
+    forgery_data = np.loadtxt(test_forgery_dtw_path, dtype=np.float32)
     result = model.infer(forgery_data)
-    print(np.sum(result < 0))
+    print(np.sum(result < 0) / len(forgery_data))
 
 
 if __name__ == '__main__':
     # build train data
-    build_data('genuine_dtw.txt', 'forgery_dtw.txt', train_dir)
+    build_data(train_genuine_dtw_path, train_forgery_dtw_path, train_dir)
     # build test data
-    build_data('test_genuine_dtw.txt', 'test_forgery_dtw.txt', test_dir)
-    # train()
-    # test()
+    build_data(test_genuine_dtw_path, test_forgery_dtw_path, test_dir)
+    train()
+    test()
