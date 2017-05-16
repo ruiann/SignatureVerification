@@ -5,9 +5,9 @@ import tensorflow as tf
 
 class LogisticRegression:
 
-    def __init__(self, name, input_dimension):
+    def __init__(self, name, input_dimension, class_num=1):
         self.name = name
-        self.W, self.b = self.full_connection_layer(input_dimension, 1)
+        self.W, self.b = self.full_connection_layer(input_dimension, class_num)
 
     def full_connection_layer(self, input_dim, out_dim):
         with tf.variable_scope(self.name):

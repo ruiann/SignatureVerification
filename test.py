@@ -1,5 +1,5 @@
 import tensorflow as tf
-from RHS import RHS
+from DIscriminator import Discriminator
 from SVC_reader import *
 import numpy as np
 
@@ -30,10 +30,10 @@ def get_feed():
 
 
 def test():
-    rhs = RHS(lstm_size=800)
+    discriminator = Discriminator(lstm_size=800)
     reference_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
     target_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
-    train_op = rhs.run(reference_x, target_x)
+    train_op = discriminator.run(reference_x, target_x)
 
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
     # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))

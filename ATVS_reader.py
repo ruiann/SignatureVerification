@@ -78,7 +78,7 @@ def get_genuine_data():
     for writer in get_writer_list():
         writer_sample = []
         for index in genuine_data_range():
-            sample = read_file('{0}/usuario{1}/u{1}_sg{2}.TXT'.format(base_path, writer, index))
+            sample = read_file('{0}/usuario{1}/u{1}_sg{2}.txt'.format(base_path, writer, index))
             writer_sample.append(sample)
         data.append(writer_sample)
     return data
