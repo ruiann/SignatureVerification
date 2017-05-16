@@ -1,5 +1,5 @@
 import tensorflow as tf
-from DIscriminator import Discriminator
+from Discriminator import Discriminator
 from SVC_reader import *
 import numpy as np
 

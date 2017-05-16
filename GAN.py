@@ -1,6 +1,5 @@
 import tensorflow as tf
-from LogisticRegression import LogisticRegression
-from BidirectionalLSTM import BidirectionalLSTM
+from Discriminator import Discriminator
 from LSTMDecoder import Decoder
 
 
@@ -14,8 +13,7 @@ class GAN:
             self.decoder = Decoder('LSTMDecoder', self.batch_size)
 
         with tf.variable_scope('discriminator'):
-            self.encoder = BidirectionalLSTM('BidirectionalLSTM', self.lstm_size)
-            self.discriminator = LogisticRegression('LogisticRegression', self.lstm_size)
+            self.discriminator = Discriminator()
 
         self.g_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='generator')
         self.d_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='discriminator')
@@ -24,10 +22,10 @@ class GAN:
         return self.decoder.run(code)
 
     def encode(self, sequence, reuse=False):
-        return self.encoder.run(sequence, reuse)
+        return self.discriminator.lstm(sequence, reuse)
 
     def disciminate(self, lstm_code):
-        return self.discriminator.run(lstm_code)
+        return self.discriminator.regression(lstm_code)
 
     def run(self, reference, target):
         reference_code = self.encode(reference)

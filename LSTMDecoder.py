@@ -17,8 +17,8 @@ class GMM:
         pi = tf.exp(pi)
         normalize_pi = tf.reciprocal(tf.reduce_sum(pi, 1, keep_dims=True))
         pi = tf.multiply(normalize_pi, pi)
-        result_x = tf.multiply(mu_x, pi)
-        result_y = tf.multiply(mu_y, pi)
+        result_x = tf.reshape(tf.reduce_sum(tf.multiply(mu_x, pi), 1), (-1, 1))
+        result_y = tf.reshape(tf.reduce_sum(tf.multiply(mu_y, pi), 1), (-1, 1))
         return tf.concat([result_x, result_y], 1)
 
 
@@ -57,4 +57,4 @@ class Decoder:
             outputs_d.append(output_d)
             outputs_s.append(output_s)
             i = i + 1
-        return outputs_d, outputs_s
+        return tf.concat([outputs_d, outputs_s], 2)

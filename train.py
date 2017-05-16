@@ -3,47 +3,57 @@ import tensorflow as tf
 import time
 import resource
 from GAN import GAN
-from SVC_reader import *
 import numpy as np
+from ATVS_reader import *
+import random
 
 rate = 0.001
 loop = 2000 * 50
-batch_size = 64
-channel = 3
+batch_size = 32
+class_num = 350
 scale = 100
 sequence_limit = 500
 
-log_dir = './log'
+log_dir = './gan_log'
 model_dir = './gan_model'
-train_path = './SVC2004/Task1'
-
-data = Data(train_path)
+genuine_data = get_genuine_data()
 
 
 def get_feed():
-    reference = []
-    target = []
-    labels = []
-    max_reference = 0
-    max_target = 0
+    r_d_feed = []
+    r_s_feed = []
+    t_d_feed = []
+    t_s_feed = []
+    max_length = 0
     for i in range(batch_size):
-        reference_data, reference_length, target_data, target_length, label_data = data.get_pair()
-        reference.append(reference_data)
-        target.append(target_data)
-        labels.append(label_data)
-        max_reference = max_reference if max_reference >= reference_length else reference_length
-        max_target = max_target if max_target >= target_length else target_length
+        label = random.randint(0, class_num - 1)
+        index = random.randint(0, 24)
+        (d, s) = genuine_data[label][index]
+        max_length = max(max_length, len(d))
+        r_d_feed.append(d)
+        r_s_feed.append(s)
+        index = random.randint(0, 24)
+        (d, s) = genuine_data[label][index]
+        max_length = max(max_length, len(d))
+        t_d_feed.append(d)
+        t_s_feed.append(s)
     for i in range(batch_size):
-        reference[i] = np.pad(reference[i], ((0, max_reference - len(reference[i])), (0, 0)), 'constant', constant_values=0)
-        target[i] = np.pad(target[i], ((0, max_target - len(target[i])), (0, 0)), 'constant', constant_values=0)
+        r_d_feed[i] = np.pad(r_d_feed[i], ((0, max_length - len(r_d_feed[i])), (0, 0)), 'constant', constant_values=0)
+        r_s_feed[i] = np.pad(r_s_feed[i], ((0, max_length - len(r_s_feed[i])), (0, 0)), 'constant', constant_values=0)
+        t_d_feed[i] = np.pad(t_d_feed[i], ((0, max_length - len(t_d_feed[i])), (0, 0)), 'constant', constant_values=0)
+        t_s_feed[i] = np.pad(t_s_feed[i], ((0, max_length - len(t_s_feed[i])), (0, 0)), 'constant', constant_values=0)
 
-    return reference, target, labels
+    return r_d_feed, r_s_feed, t_d_feed, t_s_feed
 
 
 def train():
     gan = GAN(batch_size)
-    reference_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
-    target_x = tf.placeholder(tf.float32, shape=(batch_size, None, channel))
+    reference_d = tf.placeholder(tf.float32, shape=(batch_size, None, 2))
+    reference_s = tf.placeholder(tf.float32, shape=(batch_size, None, 3))
+    target_d = tf.placeholder(tf.float32, shape=(batch_size, None, 2))
+    target_s = tf.placeholder(tf.float32, shape=(batch_size, None, 3))
+    reference_x = tf.concat([reference_d, reference_s], 2)
+    target_x = tf.concat([target_d, target_s], 2)
     d_train_op, g_train_op = gan.train(rate, reference_x, target_x)
 
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
@@ -65,8 +75,8 @@ def train():
         for step in range(loop):
             start_time = time.time()
             print('step: {}'.format(step))
-            reference_feed, target_feed, label_feed = get_feed()
-            _, _, summary_str = sess.run([d_train_op, g_train_op, summary], feed_dict={reference_x: reference_feed, target_x: target_feed})
+            r_d, r_s, t_d, t_s = get_feed()
+            _, _, summary_str = sess.run([d_train_op, g_train_op, summary], feed_dict={reference_d: r_d, reference_s: r_s, target_d: t_d, target_s: t_s})
             summary_writer.add_summary(summary_str, step)
 
             if step % 1000 == 999:
