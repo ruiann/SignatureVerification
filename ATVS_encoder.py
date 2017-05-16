@@ -9,15 +9,41 @@ from ATVS_reader import *
 import matplotlib.pyplot as plt
 import random
 
-channel = 3
+batch_size = 64
+channel = 5
+class_num = 350
 
 log_dir = './log'
 model_dir = './model'
 
-rhs = RHS(lstm_size=800, class_num=350)
+rhs = RHS(lstm_size=800, class_num=class_num)
 genuine_data = get_genuine_data()
 saver = tf.train.Saver()
 checkpoint = tf.train.get_checkpoint_state(model_dir)
+
+
+def get_feed():
+    d_feed = []
+    s_feed = []
+    label_feed = []
+    max_length = 0
+    for i in range(batch_size):
+        label = random.randint(0, class_num - 1)
+        index = random.randint(0, 24)
+        (d, s) = genuine_data[label][index]
+        max_length = max(max_length, len(d))
+        d_feed.append(d)
+        s_feed.append(s)
+        label_feed.append(label)
+    for i in range(batch_size):
+        d_feed[i] = np.pad(d_feed[i], ((0, max_length - len(d_feed[i])), (0, 0)), 'constant', constant_values=0)
+        s_feed[i] = np.pad(s_feed[i], ((0, max_length - len(s_feed[i])), (0, 0, 0)), 'constant', constant_values=0)
+
+    return d_feed, s_feed, label_feed
+
+
+def train():
+    x = tf.placeholder(tf.float32, shape=(1, None, channel))
 
 
 def test():
