@@ -1,3 +1,6 @@
+import numpy as np
+import pdb
+
 base_path = './ATVS-SSig_DB/DS1_Modification_TimeFunctions'
 useless_line = [-1]
 
@@ -17,26 +20,57 @@ def read_file(path):
         lines = file.readlines()
         for line_index in useless_line:
             del lines[line_index]
-        s = []
-        base_x = None
-        base_y = None
-        base_p = None
+
+        data = []
         for line in lines:
             line = line.replace('\r', '')
             line = line.replace('\n', '')
-            data = line.split()
-            if base_x:
-                s.append([int(data[0]) - base_x, int(data[1]) - base_y, 1 if int(data[3]) * base_p > 0 else 0])
+            data.append(line.split())
 
-            base_x = int(data[0])
-            base_y = int(data[1])
-            base_p = int(data[3])
+        sample_x = []
+        sample_y = []
+        s = []
+        before = 0
+        for index in range(len(data)):
+            p = data[index]
+            down = int(p[3])
+            if before:
+                if down:
+                    if index == len(data) - 1:
+                        eos = 1
+                        down = 0
+                    else:
+                        eos = 0
+                else:
+                    eos = 0
+                x = int(p[0])
+                y = int(p[1])
+                sample_x.append(x)
+                sample_y.append(y)
+                s.append([down, 1 if not down and not eos else 0, eos])
+            before = down
 
-    except Exception, e:
-        print repr(e)
+        sample_x = norm(sample_x)
+        sample_y = norm(sample_y)
+        s = s[1: len(s)]
+        signature = []
+        for index in range(len(s)):
+            p = [sample_x[index + 1] - sample_x[index], sample_y[index + 1] - sample_y[index]]
+            signature.append(p)
+
+    except Exception as e:
+        print(repr(e))
         return None
 
-    return s
+    return signature, s
+
+
+def norm(sequence):
+    sequence = np.array(sequence, dtype=np.float32)
+    mean = sequence.mean()
+    std = sequence.std()
+    sequence = (sequence - mean) / std
+    return sequence
 
 
 def get_genuine_data():
@@ -44,13 +78,15 @@ def get_genuine_data():
     for writer in get_writer_list():
         writer_sample = []
         for index in genuine_data_range():
-            writer_sample.append(read_file('{0}/usuario{1}/u{1}_sg{2}.TXT'.format(base_path, writer, index)))
+            sample = read_file('{0}/usuario{1}/u{1}_sg{2}.TXT'.format(base_path, writer, index))
+            writer_sample.append(sample)
         data.append(writer_sample)
     return data
 
 
 if __name__ == '__main__':
     data = get_genuine_data()
+    pdb.set_trace()
     print(len(data))
     print(len(data[0]))
     print(len(data[0][0]))

@@ -14,7 +14,7 @@ channel = 3
 log_dir = './log'
 model_dir = './model'
 
-rhs = RHS(lstm_size=800, class_num=133)
+rhs = RHS(lstm_size=800, class_num=350)
 genuine_data = get_genuine_data()
 saver = tf.train.Saver()
 checkpoint = tf.train.get_checkpoint_state(model_dir)
