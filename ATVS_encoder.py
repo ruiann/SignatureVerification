@@ -35,8 +35,9 @@ def get_feed():
         label_feed.append(label)
     for i in range(batch_size):
         d_feed[i] = np.pad(d_feed[i], ((0, max_length - len(d_feed[i])), (0, 0)), 'constant', constant_values=0)
-        eos = np.array([[0, 0, 1]] * (max_length - len(s_feed[i])), np.float32)
-        s_feed[i] = np.append(s_feed[i], eos, axis=0)
+        if max_length - len(s_feed[i]):
+            eos = np.array([[0, 0, 1]] * (max_length - len(s_feed[i])), np.float32)
+            s_feed[i] = np.concatenate((s_feed[i], eos), axis=0)
 
     return d_feed, s_feed, label_feed
 
