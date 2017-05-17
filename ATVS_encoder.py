@@ -9,10 +9,10 @@ from ATVS_reader import *
 import random
 import os
 
-batch_size = 32
+batch_size = 64
 class_num = 350
 rate = 0.0001
-loop = 10000
+loop = 1000000
 
 log_dir = './log'
 model_dir = './model'
