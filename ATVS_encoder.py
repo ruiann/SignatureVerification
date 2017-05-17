@@ -10,7 +10,6 @@ import random
 import os
 
 batch_size = 32
-channel = 5
 class_num = 350
 rate = 0.0001
 loop = 10000
@@ -18,7 +17,6 @@ loop = 10000
 log_dir = './log'
 model_dir = './model'
 
-rhs = RHS(lstm_size=800, class_num=class_num)
 genuine_data = get_genuine_data()
 
 
@@ -43,6 +41,7 @@ def get_feed():
 
 
 def train():
+    rhs = RHS(lstm_size=800, class_num=class_num)
     d = tf.placeholder(tf.float32, shape=(batch_size, None, 2))
     s = tf.placeholder(tf.float32, shape=(batch_size, None, 3))
     x = tf.concat([d, s], 2)
