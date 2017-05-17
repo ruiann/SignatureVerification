@@ -50,8 +50,8 @@ def read_file(path):
                 s.append([down, 1 if not down and not eos else 0, eos])
             before = down
 
-        sample_x = norm(sample_x)
-        sample_y = norm(sample_y)
+        sample_x, std_x = norm(sample_x)
+        sample_y, _ = norm(sample_y, std_x)
         s = s[1: len(s)]
         signature = []
         for index in range(len(s)):
@@ -65,12 +65,12 @@ def read_file(path):
     return signature, s
 
 
-def norm(sequence):
+def norm(sequence, std=None):
     sequence = np.array(sequence, dtype=np.float32)
     mean = sequence.mean()
-    std = sequence.std()
-    sequence = (sequence - mean) / std
-    return sequence
+    std = std or sequence.std()
+    sequence = 100 * (sequence - mean) / std
+    return sequence, std
 
 
 def get_genuine_data():
