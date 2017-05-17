@@ -9,7 +9,7 @@ from ATVS_reader import *
 import random
 import os
 
-batch_size = 64
+batch_size = 48
 class_num = 350
 rate = 0.0001
 loop = 1000000
