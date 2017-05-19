@@ -8,8 +8,9 @@ from BidirectionalLSTM import BidirectionalLSTM
 class Discriminator:
 
     def __init__(self, lstm_size=800):
-        self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm_size)
-        self.logistic_regression = LogisticRegression('LogisticRegression', lstm_size)
+        with tf.variable_scope('discriminator'):
+            self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm_size)
+            self.logistic_regression = LogisticRegression('LogisticRegression', lstm_size)
 
     # do classification
     def run(self, reference, target):
@@ -17,11 +18,13 @@ class Discriminator:
         target_lstm_code = self.lstm(target, reuse=True)
         return self.regression(reference_lstm_code - target_lstm_code)
 
-    def lstm(self, data, reuse=False):
-        return self.bidirectional_LSTM.run(data, reuse)
+    def lstm(self, data, reuse=False, time_major=False):
+        with tf.variable_scope('discriminator'):
+            return self.bidirectional_LSTM.run(data, reuse, time_major)
 
     def regression(self, lstm_code):
-        return self.logistic_regression.run(lstm_code)
+        with tf.variable_scope('discriminator'):
+            return self.logistic_regression.run(lstm_code)
 
     # compute loss
     def loss(self, logits, labels):

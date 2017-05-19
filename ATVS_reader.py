@@ -58,6 +58,7 @@ def read_file(path):
             p = [sample_x[index + 1] - sample_x[index], sample_y[index + 1] - sample_y[index]]
             signature.append(p)
 
+
     except Exception as e:
         print(repr(e))
         return None
