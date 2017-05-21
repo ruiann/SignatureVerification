@@ -20,41 +20,25 @@ genuine_data = get_genuine_data()
 
 
 def get_feed():
-    r_d_feed = []
-    r_s_feed = []
-    t_d_feed = []
-    t_s_feed = []
-    max_length = 0
+    r_feed = []
+    t_feed = []
     for i in range(batch_size):
         label = random.randint(0, class_num - 1)
         index = random.randint(0, 24)
-        (d, s) = genuine_data[label][index]
-        max_length = max(max_length, len(d))
-        r_d_feed.append(d)
-        r_s_feed.append(s)
+        signature = genuine_data[label][index]
+        r_feed.append(signature)
         index = random.randint(0, 24)
-        (d, s) = genuine_data[label][index]
-        max_length = max(max_length, len(d))
-        t_d_feed.append(d)
-        t_s_feed.append(s)
-    for i in range(batch_size):
-        r_d_feed[i] = np.pad(r_d_feed[i], ((0, max_length - len(r_d_feed[i])), (0, 0)), 'constant', constant_values=0)
-        r_s_feed[i] = np.pad(r_s_feed[i], ((0, max_length - len(r_s_feed[i])), (0, 0)), 'constant', constant_values=0)
-        t_d_feed[i] = np.pad(t_d_feed[i], ((0, max_length - len(t_d_feed[i])), (0, 0)), 'constant', constant_values=0)
-        t_s_feed[i] = np.pad(t_s_feed[i], ((0, max_length - len(t_s_feed[i])), (0, 0)), 'constant', constant_values=0)
+        signature = genuine_data[label][index]
+        t_feed.append(signature)
 
-    return r_d_feed, r_s_feed, t_d_feed, t_s_feed
+    return r_feed, t_feed
 
 
 def train():
     gan = GAN(batch_size)
-    reference_d = tf.placeholder(tf.float32, shape=(batch_size, None, 2))
-    reference_s = tf.placeholder(tf.float32, shape=(batch_size, None, 3))
-    target_d = tf.placeholder(tf.float32, shape=(batch_size, None, 2))
-    target_s = tf.placeholder(tf.float32, shape=(batch_size, None, 3))
-    reference_x = tf.concat([reference_d, reference_s], 2)
-    target_x = tf.concat([target_d, target_s], 2)
-    d_train_op, g_train_op = gan.train(rate, reference_x, target_x)
+    reference = tf.placeholder(tf.float32, shape=(batch_size, None, 5))
+    target = tf.placeholder(tf.float32, shape=(batch_size, None, 5))
+    d_train_op, g_train_op = gan.train(rate, reference, target)
 
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
     # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
@@ -75,8 +59,8 @@ def train():
         for step in range(loop):
             start_time = time.time()
             print('step: {}'.format(step))
-            r_d, r_s, t_d, t_s = get_feed()
-            _, _, summary_str = sess.run([d_train_op, g_train_op, summary], feed_dict={reference_d: r_d, reference_s: r_s, target_d: t_d, target_s: t_s})
+            r, t = get_feed()
+            _, _, summary_str = sess.run([d_train_op, g_train_op, summary], feed_dict={reference: r, target: t})
             summary_writer.add_summary(summary_str, step)
 
             if step % 1000 == 999:

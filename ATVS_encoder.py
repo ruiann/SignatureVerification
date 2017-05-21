@@ -21,32 +21,20 @@ genuine_data = get_genuine_data()
 
 
 def get_feed():
-    d_feed = []
     s_feed = []
     label_feed = []
-    max_length = 0
     for i in range(batch_size):
         label = random.randint(0, class_num - 1)
         index = random.randint(0, 24)
-        (d, s) = genuine_data[label][index]
-        max_length = max(max_length, len(d))
-        d_feed.append(d)
-        s_feed.append(s)
+        s_feed.append(genuine_data[label][index])
         label_feed.append(label)
-    for i in range(batch_size):
-        d_feed[i] = np.pad(d_feed[i], ((0, max_length - len(d_feed[i])), (0, 0)), 'constant', constant_values=0)
-        if max_length - len(s_feed[i]):
-            eos = np.array([[0, 0, 1]] * (max_length - len(s_feed[i])), np.float32)
-            s_feed[i] = np.concatenate((s_feed[i], eos), axis=0)
 
-    return d_feed, s_feed, label_feed
+    return s_feed, label_feed
 
 
 def train():
     rhs = RHS(lstm_size=800, class_num=class_num)
-    d = tf.placeholder(tf.float32, shape=(batch_size, None, 2))
-    s = tf.placeholder(tf.float32, shape=(batch_size, None, 3))
-    x = tf.concat([d, s], 2)
+    x = tf.placeholder(tf.float32, shape=(batch_size, None, 5))
     labels = tf.placeholder(tf.int32)
     train_op = rhs.train(rate, x, labels)
 
@@ -65,8 +53,8 @@ def train():
         for global_step in xrange(loop):
             start_time = time.time()
             print('step: {}'.format(global_step))
-            d_feed, s_feed, labels_feed = get_feed()
-            summary_str, loss = sess.run([summary, train_op], feed_dict={d: d_feed, s: s_feed, labels: labels_feed})
+            s_feed, labels_feed = get_feed()
+            summary_str, loss = sess.run([summary, train_op], feed_dict={x: s_feed, labels: labels_feed})
             summary_writer.add_summary(summary_str, global_step)
 
             if global_step % 1000 == 0 and global_step != 0:

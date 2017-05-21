@@ -58,12 +58,14 @@ def read_file(path):
             p = [sample_x[index + 1] - sample_x[index], sample_y[index + 1] - sample_y[index]]
             signature.append(p)
 
-
     except Exception as e:
         print(repr(e))
         return None
 
-    return signature, s
+    signature = np.concatenate((signature, s), axis=1)
+    length = len(signature)
+
+    return signature, length
 
 
 def norm(sequence, std=None):
@@ -75,14 +77,28 @@ def norm(sequence, std=None):
 
 
 def get_genuine_data():
+    max_length = 0;
     data = []
     for writer in get_writer_list():
         writer_sample = []
         for index in genuine_data_range():
-            sample = read_file('{0}/usuario{1}/u{1}_sg{2}.txt'.format(base_path, writer, index))
+            sample, length = read_file('{0}/usuario{1}/u{1}_sg{2}.txt'.format(base_path, writer, index))
             writer_sample.append(sample)
+            max_length = max(max_length, length)
         data.append(writer_sample)
+    for writer_sample in data:
+        for index in range(len(writer_sample)):
+            sample = writer_sample[index]
+            writer_sample[index] = pad(max_length, sample)
     return data
+
+
+def pad(length, signature):
+    pad = length - len(signature)
+    if pad:
+        eos = np.array([[0, 0, 0, 0, 1]] * pad, np.float32)
+        signature = np.concatenate((signature, eos), axis=0)
+    return signature
 
 
 if __name__ == '__main__':
