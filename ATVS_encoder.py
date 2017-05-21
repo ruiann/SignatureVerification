@@ -26,7 +26,7 @@ def get_feed():
     bucket_index = random.randint(0, 9)
     bucket = genuine_data[bucket_index]
     for i in range(batch_size):
-        index = random.randint(0, len(bucket))
+        index = random.randint(0, len(bucket) - 1)
         data = bucket[index]
         s_feed.append(data['signature'])
         label_feed.append(data['label'])
