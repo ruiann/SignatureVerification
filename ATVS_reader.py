@@ -112,6 +112,19 @@ def bucket_group():
     return buckets
 
 
+def bucket_writer_group():
+    data = get_genuine_data()
+    buckets = []
+    for bucket_data in data:
+        bucket = []
+        for writer in get_writer_list():
+            writer_sample = bucket_data[writer]
+            if len(writer_sample):
+                bucket.append(writer_sample)
+        buckets.append(bucket)
+    return buckets
+
+
 def pad(length, signature):
     pad = length - len(signature)
     if pad > 0:

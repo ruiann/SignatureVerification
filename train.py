@@ -16,19 +16,22 @@ sequence_limit = 500
 
 log_dir = './gan_log'
 model_dir = './gan_model'
-genuine_data = get_genuine_data()
+genuine_data = bucket_writer_group()
 
 
 def get_feed():
     r_feed = []
     t_feed = []
+    bucket_index = random.randint(0, len(genuine_data))
+    bucket = genuine_data[bucket_index]
     for i in range(batch_size):
-        label = random.randint(0, class_num - 1)
-        index = random.randint(0, 24)
-        signature = genuine_data[label][index]
+        index = random.randint(0, len(bucket) - 1)
+        writer_sample = bucket[index]
+        reference_index = random.randint(0, len(writer_sample) - 1)
+        signature = bucket[index][reference_index]
         r_feed.append(signature)
-        index = random.randint(0, 24)
-        signature = genuine_data[label][index]
+        target_index = random.randint(0, len(writer_sample) - 1)
+        signature = bucket[index][target_index]
         t_feed.append(signature)
 
     return r_feed, t_feed
