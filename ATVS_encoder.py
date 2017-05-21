@@ -17,17 +17,19 @@ loop = 1000000
 log_dir = './log'
 model_dir = './model'
 
-genuine_data = get_genuine_data()
+genuine_data = bucket_group()
 
 
 def get_feed():
     s_feed = []
     label_feed = []
+    bucket_index = random.randint(0, 9)
+    bucket = genuine_data[bucket_index]
     for i in range(batch_size):
-        label = random.randint(0, class_num - 1)
-        index = random.randint(0, 24)
-        s_feed.append(genuine_data[label][index])
-        label_feed.append(label)
+        index = random.randint(0, len(bucket))
+        data = bucket[index]
+        s_feed.append(data['signature'])
+        label_feed.append(data['label'])
 
     return s_feed, label_feed
 
