@@ -35,35 +35,41 @@ def get_feed():
 
 
 def train():
-    rhs = RHS(lstm_size=800, class_num=class_num)
-    x = tf.placeholder(tf.float32, shape=(batch_size, None, 5))
-    labels = tf.placeholder(tf.int32)
-    train_op = rhs.train(rate, x, labels)
-
     sess = tf.Session()
-
     with sess.as_default():
-        saver = tf.train.Saver()
-        checkpoint = tf.train.get_checkpoint_state(model_dir)
+        global_step = tf.Variable(0, name='global_step')
+        update_global_step = tf.assign(global_step, global_step + 1)
+
+        rhs = RHS(lstm_size=800, class_num=class_num)
+        x = tf.placeholder(tf.float32, shape=(batch_size, None, 5))
+        labels = tf.placeholder(tf.int32)
+        train_op = rhs.train(rate, x, labels)
+
         summary = tf.summary.merge_all()
         run_metadata = tf.RunMetadata()
-        if checkpoint:
-            saver.restore(sess, checkpoint.model_checkpoint_path)
         summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
         sess.run(tf.global_variables_initializer())
 
-        for global_step in xrange(loop):
+        saver = tf.train.Saver()
+        checkpoint = tf.train.get_checkpoint_state(model_dir)
+        if checkpoint:
+            saver.restore(sess, checkpoint.model_checkpoint_path)
+
+        step = global_step.eval()
+        while step < loop:
             start_time = time.time()
-            print('step: {}'.format(global_step))
+            print('step: {}'.format(step))
             s_feed, labels_feed = get_feed()
             summary_str, loss = sess.run([summary, train_op], feed_dict={x: s_feed, labels: labels_feed})
-            summary_writer.add_summary(summary_str, global_step)
+            summary_writer.add_summary(summary_str, step)
 
-            if global_step % 1000 == 0 and global_step != 0:
-                checkpoint_file = os.path.join(model_dir, 'model.latest')
-                saver.save(sess, checkpoint_file)
-                summary_writer.add_run_metadata(run_metadata, 'step%03d' % global_step)
+            if step % 1000 == 999 and step != 0:
+                checkpoint_file = os.path.join(model_dir, 'model')
+                saver.save(sess, checkpoint_file, global_step)
+                summary_writer.add_run_metadata(run_metadata, 'step%03d' % step)
             print("step cost: {0}".format(time.time() - start_time))
+            sess.run(update_global_step)
+            step = step + 1
 
         summary_writer.close()
 
