@@ -13,18 +13,15 @@ class BidirectionalLSTM:
     def run(self, data, reuse=False, time_major=False):
         with tf.variable_scope(self.name):
             with tf.variable_scope("ForwardLSTM", reuse=reuse) as scope:
+                time_axis = 0 if time_major else 1
                 forward_output, state = tf.nn.dynamic_rnn(self.forward_lstm, data, dtype=self.data_type, time_major=time_major, scope=scope)
-                if time_major:
-                    forward_output = tf.reduce_mean(forward_output, 0)
-                else:
-                    forward_output = tf.reduce_mean(forward_output, 1)
+                forward_output = tf.reduce_mean(forward_output, time_axis)
 
             with tf.variable_scope("BackwardLSTM", reuse=reuse) as scope:
-                backward_output, state = tf.nn.dynamic_rnn(self.backward_lstm, data, dtype=self.data_type, time_major=time_major, scope=scope)
-                if time_major:
-                    backward_output = tf.reduce_mean(backward_output, 0)
-                else:
-                    backward_output = tf.reduce_mean(backward_output, 1)
+                time_axis = 0 if time_major else 1
+                reverse_data = tf.reverse(data, axis=time_axis)
+                backward_output, state = tf.nn.dynamic_rnn(self.backward_lstm, reverse_data, dtype=self.data_type, time_major=time_major, scope=scope)
+                backward_output = tf.reduce_mean(backward_output, time_axis)
 
             tf.summary.histogram('forward_lstm_output', forward_output)
             tf.summary.histogram('backward_lstm_output', backward_output)
