@@ -1,4 +1,6 @@
-# definition RHS model
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import tensorflow as tf
 from LogisticRegression import LogisticRegression
@@ -8,7 +10,7 @@ from BidirectionalLSTM import BidirectionalLSTM
 class RHS:
 
     def __init__(self, lstm_size=800, class_num=10):
-        self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm_size)
+        self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm_size=lstm_size, stack=3)
         self.logistic_regression = LogisticRegression('LogisticRegression', lstm_size, class_num)
 
     # do classification
@@ -17,7 +19,7 @@ class RHS:
         return self.regression(lstm_code)
 
     def lstm(self, data):
-        return self.bidirectional_LSTM.run(data, False)
+        return self.bidirectional_LSTM.run(data, reuse=False, time_major=False, pooling='mean')
 
     def regression(self, lstm_code):
         return tf.nn.relu(self.logistic_regression.run(lstm_code))

@@ -1,14 +1,18 @@
-# define the bidirectional LSTM network for RHS feature extraction
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import tensorflow as tf
+from tensorflow.contrib import rnn
 
 
 class BidirectionalLSTM:
-    def __init__(self, name, lstm_size, data_type=tf.float32):
+    def __init__(self, name, lstm_size, data_type=tf.float32, stack=1):
         self.data_type = data_type
         self.name = name
         with tf.variable_scope(self.name):
-            self.forward_lstm = tf.contrib.rnn.BasicLSTMCell(lstm_size)
-            self.backward_lstm = tf.contrib.rnn.BasicLSTMCell(lstm_size)
+            self.forward_lstm = rnn.MultiRNNCell([rnn.BasicLSTMCell(lstm_size) for i in range(stack)])
+            self.backward_lstm = rnn.MultiRNNCell([rnn.BasicLSTMCell(lstm_size) for i in range(stack)])
 
     def run(self, data, reuse=False, time_major=False, pooling=False):
         time_axis = 0 if time_major else 1
