@@ -43,7 +43,8 @@ def train():
         rhs = RHS(class_num=class_num)
         x = tf.placeholder(tf.float32, shape=(batch_size, None, 5))
         labels = tf.placeholder(tf.int32)
-        train_op = rhs.train(rate, x, labels)
+        loss = rhs.train(x, labels)
+        train_op = tf.train.AdamOptimizer(learning_rate=rate).minimize(loss)
 
         summary = tf.summary.merge_all()
         run_metadata = tf.RunMetadata()
@@ -60,7 +61,7 @@ def train():
             start_time = time.time()
             print('step: {}'.format(step))
             bucket_index, s_feed, labels_feed = get_feed()
-            summary_str, loss = sess.run([summary, train_op], feed_dict={x: s_feed, labels: labels_feed})
+            summary_str, loss, _ = sess.run([summary, loss, train_op], feed_dict={x: s_feed, labels: labels_feed})
             summary_writer.add_summary(summary_str, step)
             print('bucket: {} loss: {}'.format(bucket_index, loss))
 
