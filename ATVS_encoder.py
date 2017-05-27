@@ -31,7 +31,7 @@ def get_feed():
         s_feed.append(data['signature'])
         label_feed.append(data['label'])
 
-    return s_feed, label_feed
+    return bucket_index, s_feed, label_feed
 
 
 def train():
@@ -59,9 +59,10 @@ def train():
         while step < loop:
             start_time = time.time()
             print('step: {}'.format(step))
-            s_feed, labels_feed = get_feed()
+            bucket_index, s_feed, labels_feed = get_feed()
             summary_str, loss = sess.run([summary, train_op], feed_dict={x: s_feed, labels: labels_feed})
             summary_writer.add_summary(summary_str, step)
+            print('bucket: {} loss: {}'.format(bucket_index, loss))
 
             if step % 1000 == 999 and step != 0:
                 checkpoint_file = os.path.join(model_dir, 'model')
