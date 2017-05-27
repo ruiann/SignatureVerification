@@ -40,7 +40,7 @@ def train():
         global_step = tf.Variable(0, name='global_step')
         update_global_step = tf.assign(global_step, global_step + 1)
 
-        rhs = RHS(lstm_size=800, class_num=class_num)
+        rhs = RHS(class_num=class_num)
         x = tf.placeholder(tf.float32, shape=(batch_size, None, 5))
         labels = tf.placeholder(tf.int32)
         train_op = rhs.train(rate, x, labels)

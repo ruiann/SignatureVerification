@@ -11,8 +11,8 @@ class BidirectionalLSTM:
         self.data_type = data_type
         self.name = name
         with tf.variable_scope(self.name):
-            self.forward_lstm = rnn.MultiRNNCell([rnn.BasicLSTMCell(lstm_size) for i in range(stack)])
-            self.backward_lstm = rnn.MultiRNNCell([rnn.BasicLSTMCell(lstm_size) for i in range(stack)])
+            self.forward_lstm = rnn.MultiRNNCell([rnn.BasicLSTMCell(lstm_size[i]) for i in range(stack)])
+            self.backward_lstm = rnn.MultiRNNCell([rnn.BasicLSTMCell(lstm_size[i]) for i in range(stack)])
 
     def run(self, data, reuse=False, time_major=False, pooling=False):
         time_axis = 0 if time_major else 1

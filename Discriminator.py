@@ -1,4 +1,6 @@
-# definition RHS model
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import tensorflow as tf
 from LogisticRegression import LogisticRegression
@@ -7,10 +9,10 @@ from BidirectionalLSTM import BidirectionalLSTM
 
 class Discriminator:
 
-    def __init__(self, lstm_size=800):
+    def __init__(self):
         with tf.variable_scope('discriminator'):
-            self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm_size)
-            self.logistic_regression = LogisticRegression('LogisticRegression', lstm_size)
+            self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm_size=[100, 500], stack=2)
+            self.logistic_regression = LogisticRegression('LogisticRegression', [100, 1])
 
     # do classification
     def run(self, reference, target):

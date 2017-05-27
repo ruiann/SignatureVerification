@@ -9,9 +9,9 @@ from BidirectionalLSTM import BidirectionalLSTM
 
 class RHS:
 
-    def __init__(self, lstm_size=800, class_num=10):
-        self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm_size=lstm_size, stack=3)
-        self.logistic_regression = LogisticRegression('LogisticRegression', lstm_size, class_num)
+    def __init__(self, class_num=10):
+        self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm_size=[200, 1000], stack=2)
+        self.logistic_regression = LogisticRegression('LogisticRegression', 500, [200, class_num])
 
     # do classification
     def run(self, data):
