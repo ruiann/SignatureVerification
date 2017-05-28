@@ -61,9 +61,9 @@ def train():
             start_time = time.time()
             print('step: {}'.format(step))
             bucket_index, s_feed, labels_feed = get_feed()
-            summary_str, loss, _ = sess.run([summary, loss, train_op], feed_dict={x: s_feed, labels: labels_feed})
+            summary_str, step_loss, _ = sess.run([summary, loss, train_op], feed_dict={x: s_feed, labels: labels_feed})
             summary_writer.add_summary(summary_str, step)
-            print('bucket: {} loss: {}'.format(bucket_index, loss))
+            print('bucket: {} loss: {}'.format(bucket_index, step_loss))
 
             if step % 1000 == 999 and step != 0:
                 checkpoint_file = os.path.join(model_dir, 'model')
