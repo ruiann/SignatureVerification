@@ -1,8 +1,10 @@
 import numpy as np
+import pdb
 
 base_path = './ATVS-SSig_DB/DS1_Modification_TimeFunctions'
 useless_line = [-1]
-bucket = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+bucket_gap = 50
+bucket_size = 20
 
 
 def get_writer_list():
@@ -52,11 +54,11 @@ def read_file(path):
 
         sample_x, std_x = norm(sample_x)
         sample_y, _ = norm(sample_y, std_x)
-        s = s[1: len(s)]
         signature = []
-        for index in range(len(s)):
-            p = [sample_x[index + 1] - sample_x[index], sample_y[index + 1] - sample_y[index]]
+        for index in range(len(s) - 1):
+            p = [sample_x[index], sample_y[index], sample_x[index + 1] - sample_x[index], sample_y[index + 1] - sample_y[index]]
             signature.append(p)
+        signature.append([sample_x[-1], sample_y[-1], 0, 0])
 
     except Exception as e:
         print(repr(e))
@@ -78,7 +80,7 @@ def norm(sequence, std=None):
 
 def init_bucket():
     data = []
-    for bucket_index in range(len(bucket)):
+    for bucket_index in range(bucket_size):
         bucket_data = []
         for writer in get_writer_list():
             bucket_data.append([])
@@ -91,8 +93,8 @@ def get_genuine_data():
     for writer in get_writer_list():
         for index in genuine_data_range():
             sample, length = read_file('{0}/usuario{1}/u{1}_sg{2}.txt'.format(base_path, 1001 + writer, index))
-            bucket_index = min(int(length / 100), 9)
-            sample = pad(bucket[bucket_index], sample)
+            bucket_index = min(int(length / bucket_gap), bucket_size - 1)
+            sample = pad(bucket_gap * bucket_index + bucket_gap, sample)
             bucket_data = data[bucket_index]
             bucket_data[writer].append(sample)
     return data
@@ -127,7 +129,7 @@ def bucket_writer_group():
 def pad(length, signature):
     pad = length - len(signature)
     if pad > 0:
-        eos = np.array([[0, 0, 0, 0, 0]] * pad, np.float32)
+        eos = np.array([[0, 0, 0, 0, 0, 0, 0]] * pad, np.float32)
         signature = np.concatenate((signature, eos), axis=0)
     else:
         signature = signature[0: length]
@@ -138,4 +140,3 @@ if __name__ == '__main__':
     data = bucket_group()
     print(len(data))
     print(len(data[0]))
-    print(len(data[0][0]))
