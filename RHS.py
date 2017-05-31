@@ -9,7 +9,7 @@ from BidirectionalRNN import BidirectionalRNN
 
 class RHS:
 
-    def __init__(self, lstm=[100, 800], layer=[500, 350]):
+    def __init__(self, lstm=[800], layer=[500, 350]):
         self.bidirectional_rnn = BidirectionalRNN('BidirectionalLSTM', lstm)
         self.logistic_regression = LogisticRegression('LogisticRegression', lstm[-1], layer)
 
@@ -19,7 +19,7 @@ class RHS:
         return self.regression(lstm_code)
 
     def lstm(self, data):
-        return self.bidirectional_rnn.run(data, reuse=False, time_major=False, pooling='mean')
+        return self.bidirectional_rnn.run(data, reuse=False, time_major=False)
 
     def regression(self, lstm_code):
         return tf.nn.relu(self.logistic_regression.run(lstm_code)[-1])

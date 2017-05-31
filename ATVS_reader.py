@@ -127,7 +127,7 @@ def bucket_writer_group():
 def pad(length, signature):
     pad = length - len(signature)
     if pad > 0:
-        eos = np.array([[0, 0, 0, 0, 1]] * pad, np.float32)
+        eos = np.array([[0, 0, 0, 0, 0]] * pad, np.float32)
         signature = np.concatenate((signature, eos), axis=0)
     else:
         signature = signature[0: length]
