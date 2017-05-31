@@ -23,7 +23,7 @@ genuine_data = bucket_group()
 def get_feed():
     s_feed = []
     label_feed = []
-    bucket_index = random.randint(0, 9)
+    bucket_index = random.randint(0, len(genuine_data) - 1)
     bucket = genuine_data[bucket_index]
     for i in range(batch_size):
         index = random.randint(0, len(bucket) - 1)
