@@ -66,7 +66,7 @@ def train():
             print('bucket: {} loss: {}'.format(bucket_index, step_loss))
 
             if step % 1000 == 999 and step != 0:
-                checkpoint_file = os.path.join(model_dir, 'model')
+                checkpoint_file =  os.path.join(model_dir, 'model')
                 saver.save(sess, checkpoint_file, global_step)
                 summary_writer.add_run_metadata(run_metadata, 'step%03d' % step)
             print("step cost: {0}".format(time.time() - start_time))

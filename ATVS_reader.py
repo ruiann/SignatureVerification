@@ -1,5 +1,4 @@
 import numpy as np
-import pdb
 
 base_path = './ATVS-SSig_DB/DS1_Modification_TimeFunctions'
 useless_line = [-1]
@@ -137,7 +136,6 @@ def pad(length, signature):
 
 if __name__ == '__main__':
     data = bucket_group()
-    pdb.set_trace()
     print(len(data))
     print(len(data[0]))
     print(len(data[0][0]))
