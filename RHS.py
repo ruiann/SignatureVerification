@@ -4,14 +4,14 @@ from __future__ import print_function
 
 import tensorflow as tf
 from LogisticRegression import LogisticRegression
-from BidirectionalLSTM import BidirectionalLSTM
+from BidirectionalRNN import BidirectionalRNN
 
 
 class RHS:
 
-    def __init__(self, lstm=[100, 500], class_num=10):
-        self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm, stack=2)
-        self.logistic_regression = LogisticRegression('LogisticRegression', lstm[-1], [800, class_num])
+    def __init__(self, lstm=[100, 800], layer=[500, 350]):
+        self.bidirectional_rnn = BidirectionalRNN('BidirectionalLSTM', lstm)
+        self.logistic_regression = LogisticRegression('LogisticRegression', lstm[-1], layer)
 
     # do classification
     def run(self, data):
@@ -19,7 +19,7 @@ class RHS:
         return self.regression(lstm_code)
 
     def lstm(self, data):
-        return self.bidirectional_LSTM.run(data, reuse=False, time_major=False)
+        return self.bidirectional_rnn.run(data, reuse=False, time_major=False, pooling='mean')
 
     def regression(self, lstm_code):
         return tf.nn.relu(self.logistic_regression.run(lstm_code)[-1])

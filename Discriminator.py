@@ -4,14 +4,14 @@ from __future__ import print_function
 
 import tensorflow as tf
 from LogisticRegression import LogisticRegression
-from BidirectionalLSTM import BidirectionalLSTM
+from BidirectionalRNN import BidirectionalRNN
 
 
 class Discriminator:
 
     def __init__(self):
         with tf.variable_scope('discriminator'):
-            self.bidirectional_LSTM = BidirectionalLSTM('BidirectionalLSTM', lstm_size=[100, 500], stack=2)
+            self.bidirectional_rnn = BidirectionalRNN('BidirectionalLSTM', lstm_size=[100, 500])
             self.logistic_regression = LogisticRegression('LogisticRegression', [100, 1])
 
     # do classification
@@ -22,7 +22,7 @@ class Discriminator:
 
     def lstm(self, data, reuse=False, time_major=False):
         with tf.variable_scope('discriminator'):
-            return self.bidirectional_LSTM.run(data, reuse, time_major)
+            return self.bidirectional_rnn.run(data, reuse, time_major)
 
     def regression(self, lstm_code):
         with tf.variable_scope('discriminator'):

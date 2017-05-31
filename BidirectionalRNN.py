@@ -6,13 +6,13 @@ import tensorflow as tf
 from tensorflow.contrib import rnn
 
 
-class BidirectionalLSTM:
-    def __init__(self, name, lstm_size, data_type=tf.float32, stack=1):
+class BidirectionalRNN:
+    def __init__(self, name, lstm_size, data_type=tf.float32):
         self.data_type = data_type
         self.name = name
         with tf.variable_scope(self.name):
-            self.forward_lstm = rnn.MultiRNNCell([rnn.BasicLSTMCell(lstm_size[i]) for i in range(stack)])
-            self.backward_lstm = rnn.MultiRNNCell([rnn.BasicLSTMCell(lstm_size[i]) for i in range(stack)])
+            self.forward_lstm = rnn.MultiRNNCell([rnn.GRUCell(lstm_size[i]) for i in range(len(lstm_size))])
+            self.backward_lstm = rnn.MultiRNNCell([rnn.GRUCell(lstm_size[i]) for i in range(len(lstm_size))])
 
     def run(self, data, reuse=False, time_major=False, pooling=False):
         time_axis = 0 if time_major else 1
@@ -35,4 +35,4 @@ class BidirectionalLSTM:
             tf.summary.histogram('forward_lstm_output', forward_output)
             tf.summary.histogram('backward_lstm_output', backward_output)
 
-        return tf.add(forward_output, backward_output, 'feature')
+        return (forward_output + backward_output) / 2

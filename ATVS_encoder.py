@@ -40,7 +40,7 @@ def train():
         global_step = tf.Variable(0, name='global_step')
         update_global_step = tf.assign(global_step, global_step + 1)
 
-        rhs = RHS(class_num=class_num)
+        rhs = RHS()
         x = tf.placeholder(tf.float32, shape=(batch_size, None, 5))
         labels = tf.placeholder(tf.int32)
         loss = rhs.train(x, labels)
@@ -66,7 +66,7 @@ def train():
             print('bucket: {} loss: {}'.format(bucket_index, step_loss))
 
             if step % 1000 == 999 and step != 0:
-                checkpoint_file =  os.path.join(model_dir, 'model')
+                checkpoint_file = os.path.join(model_dir, 'model')
                 saver.save(sess, checkpoint_file, global_step)
                 summary_writer.add_run_metadata(run_metadata, 'step%03d' % step)
             print("step cost: {0}".format(time.time() - start_time))
