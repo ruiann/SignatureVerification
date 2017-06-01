@@ -22,7 +22,7 @@ class RHS:
         return self.bidirectional_rnn.run(data, reuse=False, time_major=False)
 
     def regression(self, lstm_code):
-        return tf.nn.relu(self.logistic_regression.run(lstm_code)[-1])
+        return self.logistic_regression.run(lstm_code)
 
     # compute loss
     def loss(self, logits, labels):

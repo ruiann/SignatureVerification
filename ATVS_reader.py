@@ -1,5 +1,4 @@
 import numpy as np
-import pdb
 
 base_path = './ATVS-SSig_DB/DS1_Modification_TimeFunctions'
 useless_line = [-1]
