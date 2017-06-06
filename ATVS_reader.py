@@ -15,7 +15,7 @@ def genuine_data_range():
 
 
 # data definition of BIT Handwriting
-def read_file(path):
+def read_file(path, max_length=None):
     try:
         file = open(path, 'r')
         lines = file.readlines()
@@ -28,16 +28,19 @@ def read_file(path):
             line = line.replace('\n', '')
             data.append(line.split())
 
+        max_length = max_length or len(data)
+        data_range = min(len(data), max_length)
+
         sample_x = []
         sample_y = []
         s = []
         before = 0
-        for index in range(len(data)):
+        for index in range(data_range):
             p = data[index]
             down = int(p[3])
             if before or down:
                 if down:
-                    if index == len(data) - 1:
+                    if index == data_range - 1:
                         eos = 1
                         down = 0
                     else:
