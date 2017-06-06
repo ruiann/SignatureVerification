@@ -35,7 +35,7 @@ def read_file(path):
         for index in range(len(data)):
             p = data[index]
             down = int(p[3])
-            if before:
+            if before or down:
                 if down:
                     if index == len(data) - 1:
                         eos = 1
@@ -73,7 +73,7 @@ def norm(sequence, std=None):
     sequence = np.array(sequence, dtype=np.float32)
     mean = sequence.mean()
     std = std or sequence.std()
-    sequence = 100 * (sequence - mean) / std
+    sequence = (sequence - mean) / std
     return sequence, std
 
 
