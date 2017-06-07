@@ -15,7 +15,7 @@ def genuine_data_range():
 
 
 # data definition of BIT Handwriting
-def read_file(path, max_length=None):
+def read_file(path, max_length=bucket_gap * bucket_size):
     try:
         file = open(path, 'r')
         lines = file.readlines()
@@ -28,7 +28,6 @@ def read_file(path, max_length=None):
             line = line.replace('\n', '')
             data.append(line.split())
 
-        max_length = max_length or len(data)
         data_range = min(len(data), max_length)
 
         sample_x = []
