@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import numpy as np
 
 base_path = './ATVS-SSig_DB/DS1_Modification_TimeFunctions'
@@ -34,6 +38,7 @@ def read_file(path, max_length=bucket_gap * bucket_size):
         sample_y = []
         s = []
         before = 0
+
         for index in range(data_range):
             p = data[index]
             down = int(p[3])
@@ -59,7 +64,7 @@ def read_file(path, max_length=bucket_gap * bucket_size):
         prev_x = 0
         prev_y = 0
         for index in range(len(s)):
-            p = [sample_x[index + 1] - prev_x, sample_y[index + 1] - prev_y]
+            p = [sample_x[index] - prev_x, sample_y[index] - prev_y]
             prev_x = sample_x[index]
             prev_y = sample_y[index]
             signature.append(p)
