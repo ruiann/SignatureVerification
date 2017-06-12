@@ -41,7 +41,7 @@ def train():
         update_global_step = tf.assign(global_step, global_step + 1)
 
         rhs = RHS()
-        x = tf.placeholder(tf.float32, shape=(batch_size, None, 7))
+        x = tf.placeholder(tf.float32, shape=(batch_size, None, 5))
         labels = tf.placeholder(tf.int32)
         loss = rhs.train(x, labels)
         train_op = tf.train.AdamOptimizer(learning_rate=rate).minimize(loss)
