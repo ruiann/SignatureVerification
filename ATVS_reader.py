@@ -56,10 +56,13 @@ def read_file(path, max_length=bucket_gap * bucket_size):
         sample_x, std_x = norm(sample_x)
         sample_y, _ = norm(sample_y, std_x)
         signature = []
-        for index in range(len(s) - 1):
-            p = [sample_x[index], sample_y[index], sample_x[index + 1] - sample_x[index], sample_y[index + 1] - sample_y[index]]
+        prev_x = 0
+        prev_y = 0
+        for index in range(len(s)):
+            p = [sample_x[index + 1] - prev_x, sample_y[index + 1] - prev_y]
+            prev_x = sample_x[index]
+            prev_y = sample_y[index]
             signature.append(p)
-        signature.append([sample_x[-1], sample_y[-1], 0, 0])
 
     except Exception as e:
         print(repr(e))
@@ -130,7 +133,7 @@ def bucket_writer_group():
 def pad(length, signature):
     pad = length - len(signature)
     if pad > 0:
-        eos = np.array([[0, 0, 0, 0, 0, 0, 0]] * pad, np.float32)
+        eos = np.array([[0, 0, 0, 0, 1]] * pad, np.float32)
         signature = np.concatenate((signature, eos), axis=0)
     else:
         signature = signature[0: length]

@@ -75,5 +75,37 @@ def train():
 
         summary_writer.close()
 
+
+def normalize(data, max_length=None):
+    if (max_length and (len(data) > max_length)):
+        data = data[0: max_length]
+    data = np.array(data, np.float32)
+    data[:, 0], std_x = norm(data[:, 0])
+    data[:, 1], _ = norm(data[:, 1], std_x)
+    prev_x = 0
+    prev_y = 0
+    normalized_data = []
+    for point in data:
+        normalized_data.append([point[0] - prev_x, point[1] - prev_y, point[2], point[3], point[4]])
+        prev_x = point[0]
+        prev_y = point[1]
+    return np.array(normalized_data, np.float32)
+
+
+def infer(reference, target, max_length=None):
+    reference = normalize(reference, max_length)
+    target = normalize(target)
+    sess = tf.Session()
+    with sess.as_default():
+        rhs = RHS()
+        saver = tf.train.Saver()
+        checkpoint = tf.train.get_checkpoint_state(model_dir)
+        saver.restore(sess, checkpoint.model_checkpoint_path)
+        reference = rhs.run([reference]);
+        target = rhs.run([target])
+        distance = tf.reduce_mean(tf.square(reference - target))
+        distance = sess.run(distance)
+        print(distance)
+
 if __name__ == '__main__':
     train()
