@@ -17,10 +17,8 @@ loop = 1000000
 log_dir = './log'
 model_dir = './model'
 
-genuine_data = bucket_group()
 
-
-def get_feed():
+def get_feed(genuine_data):
     s_feed = []
     label_feed = []
     bucket_index = random.randint(0, len(genuine_data) - 1)
@@ -35,6 +33,7 @@ def get_feed():
 
 
 def train():
+    genuine_data = bucket_group()
     sess = tf.Session()
     with sess.as_default():
         global_step = tf.Variable(0, name='global_step')
@@ -60,7 +59,7 @@ def train():
         while step < loop:
             start_time = time.time()
             print('step: {}'.format(step))
-            bucket_index, s_feed, labels_feed = get_feed()
+            bucket_index, s_feed, labels_feed = get_feed(genuine_data)
             summary_str, step_loss, _ = sess.run([summary, loss, train_op], feed_dict={x: s_feed, labels: labels_feed})
             summary_writer.add_summary(summary_str, step)
             print('bucket: {} loss: {}'.format(bucket_index, step_loss))
@@ -79,6 +78,7 @@ def train():
 def normalize(data, max_length=None):
     if (max_length and (len(data) > max_length)):
         data = data[0: max_length]
+        data[-1][2:5] = [0, 0, 1]
     data = np.array(data, np.float32)
     data[:, 0], std_x = norm(data[:, 0])
     data[:, 1], _ = norm(data[:, 1], std_x)
@@ -98,14 +98,16 @@ def infer(reference, target, max_length=None):
     sess = tf.Session()
     with sess.as_default():
         rhs = RHS()
-        saver = tf.train.Saver()
+        x_1 = tf.placeholder(tf.float32, shape=(1, None, 5))
+        x_2 = tf.placeholder(tf.float32, shape=(1, None, 5))
+        distance = tf.reduce_mean(tf.square(rhs.run(x_1) - rhs.run(x_2, reuse=True)))
+        sess.run(tf.global_variables_initializer())
         checkpoint = tf.train.get_checkpoint_state(model_dir)
+        saver = tf.train.Saver()
         saver.restore(sess, checkpoint.model_checkpoint_path)
-        reference = rhs.run([reference]);
-        target = rhs.run([target])
-        distance = tf.reduce_mean(tf.square(reference - target))
-        distance = sess.run(distance)
-        print(distance)
+
+        dis = sess.run(distance, feed_dict={x_1: [reference], x_2: [target]})
+        print(dis)
 
 if __name__ == '__main__':
     train()

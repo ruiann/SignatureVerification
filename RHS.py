@@ -14,15 +14,15 @@ class RHS:
         self.logistic_regression = LogisticRegression('LogisticRegression', rnn[-1], layer)
 
     # do classification
-    def run(self, data):
-        rnn_code = self.rnn(data)
-        return self.regression(rnn_code)
+    def run(self, data, reuse=False):
+        rnn_code = self.rnn(data, reuse=reuse)
+        return self.regression(rnn_code, reuse=reuse)
 
-    def rnn(self, data):
-        return self.bidirectional_rnn.run(data, reuse=False, time_major=False)
+    def rnn(self, data, reuse=False):
+        return self.bidirectional_rnn.run(data, reuse=reuse, time_major=False)
 
-    def regression(self, rnn_code):
-        return self.logistic_regression.run(rnn_code)
+    def regression(self, rnn_code, reuse=False):
+        return self.logistic_regression.run(rnn_code, reuse=reuse)
 
     # compute loss
     def loss(self, logits, labels):

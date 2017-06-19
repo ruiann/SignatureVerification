@@ -7,7 +7,7 @@ import numpy as np
 base_path = './ATVS-SSig_DB/DS1_Modification_TimeFunctions'
 useless_line = [-1]
 bucket_gap = 50
-bucket_size = 20
+bucket_size = 4
 
 
 def get_writer_list():
@@ -149,3 +149,4 @@ if __name__ == '__main__':
     data = bucket_group()
     print(len(data))
     print(len(data[0]))
+    print(data[0][0])
