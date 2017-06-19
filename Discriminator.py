@@ -9,10 +9,10 @@ from BidirectionalRNN import BidirectionalRNN
 
 class Discriminator:
 
-    def __init__(self):
+    def __init__(self, rnn_size=[500]):
         with tf.variable_scope('discriminator'):
-            self.bidirectional_rnn = BidirectionalRNN('BidirectionalRNN', rnn_size=[100, 500])
-            self.logistic_regression = LogisticRegression('LogisticRegression', [100, 1])
+            self.bidirectional_rnn = BidirectionalRNN('BidirectionalRNN', rnn_size=rnn_size)
+            self.logistic_regression = LogisticRegression('LogisticRegression', rnn_size[-1], [100, 1])
 
     # do classification
     def run(self, reference, target):

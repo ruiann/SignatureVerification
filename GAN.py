@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import tensorflow as tf
 from Discriminator import Discriminator
 from Generator import Generator
@@ -16,7 +20,7 @@ class GAN:
         return self.generator.run(code)
 
     def encode(self, sequence, reuse=False, time_major=False):
-        return self.discriminator.lstm(sequence, reuse, time_major)
+        return self.discriminator.rnn(sequence, reuse, time_major)
 
     def discriminate(self, lstm_code):
         return self.discriminator.regression(lstm_code)
@@ -24,7 +28,7 @@ class GAN:
     def run(self, reference, target):
         reference_code = self.encode(reference)
         target_code = self.encode(target, True)
-        fake_target = self.generate(target_code)
+        fake_target = self.generate(reference)
         fake_code = self.encode(fake_target, True, True)
         target_output = self.discriminate(target_code - reference_code)
         fake_output = self.discriminate(fake_code - reference_code)
