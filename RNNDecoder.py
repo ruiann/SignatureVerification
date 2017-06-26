@@ -30,15 +30,14 @@ class Decoder:
             self.dg = DG('d_generator', lstm_size, [1])
             self.W = tf.Variable(tf.random_normal([lstm_size, 3], stddev=0.5, dtype=tf.float32))
 
-    def run(self, encoding):
-        shape = encoding.get_shape().as_list()
-        with tf.variable_scope(self.name) as scope:
-            self.U = tf.Variable(tf.random_normal([2, shape[1]], stddev=0.5, dtype=tf.float32))
-            self.V = tf.Variable(tf.random_normal([3, shape[1]], stddev=0.5, dtype=tf.float32))
+    def run(self, encoding_size, encoding):
+        with tf.variable_scope(self.name):
+            self.U = tf.Variable(tf.random_normal([2, encoding_size], stddev=0.5, dtype=tf.float32))
+            self.V = tf.Variable(tf.random_normal([3, encoding_size], stddev=0.5, dtype=tf.float32))
             state = self.gru_cell.zero_state(self.batch_size, self.dtype)
 
-            output_d = tf.constant(0, dtype=tf.float32, shape=[shape[0], 2])
-            output_s = tf.constant(0, dtype=tf.float32, shape=[shape[0], 3])
+            output_d = tf.constant(0, dtype=tf.float32, shape=[self.batch_size, 2])
+            output_s = tf.constant(0, dtype=tf.float32, shape=[self.batch_size, 3])
 
             outputs_d = []
             outputs_s = []

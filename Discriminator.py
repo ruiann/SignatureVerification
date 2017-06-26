@@ -24,9 +24,9 @@ class Discriminator:
         with tf.variable_scope('discriminator'):
             return self.bidirectional_rnn.run(data, reuse, time_major)
 
-    def regression(self, rnn_code):
+    def regression(self, rnn_code, reuse=False):
         with tf.variable_scope('discriminator'):
-            return self.logistic_regression.run(rnn_code)
+            return self.logistic_regression.run(rnn_code, reuse)
 
     # compute loss
     def loss(self, logits, labels):

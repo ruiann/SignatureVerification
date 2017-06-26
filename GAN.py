@@ -22,8 +22,8 @@ class GAN:
     def encode(self, sequence, reuse=False, time_major=False):
         return self.discriminator.rnn(sequence, reuse, time_major)
 
-    def discriminate(self, lstm_code):
-        return self.discriminator.regression(lstm_code)
+    def discriminate(self, lstm_code, reuse=False):
+        return self.discriminator.regression(lstm_code, reuse)
 
     def run(self, reference, target):
         reference_code = self.encode(reference)
@@ -31,7 +31,7 @@ class GAN:
         fake_target = self.generate(reference)
         fake_code = self.encode(fake_target, True, True)
         target_output = self.discriminate(target_code - reference_code)
-        fake_output = self.discriminate(fake_code - reference_code)
+        fake_output = self.discriminate(fake_code - reference_code, True)
 
         tf.summary.histogram('target discrimination', target_output)
         tf.summary.histogram('fake discrimination', fake_output)
