@@ -42,8 +42,10 @@ class GAN:
 
         target_label = tf.ones_like(target_output)
         fake_label = tf.zeros_like(fake_output)
-        d_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=target_output, labels=target_label, name='target'))
-        g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_output, labels=fake_label, name='fake'))
+        d_loss_d = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=target_output, labels=target_label, name='d_loss_d'))
+        d_loss_g = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_output, labels=fake_label, name='d_loss_g'))
+        d_loss = (d_loss_d + d_loss_g) / 2
+        g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_output, labels=target_label, name='g_loss'))
 
         tf.summary.scalar('discriminator loss', d_loss)
         tf.summary.scalar('generator loss', g_loss)
